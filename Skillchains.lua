@@ -124,6 +124,24 @@ local aeonic_weapon = {
     [22143] = 'Fomalhaut'
 }
 
+local weapon_bash_augment = S{
+    23181,
+    23516
+}
+
+local bags = {
+    'Inventory',
+    'Wardrobe',
+    'Wardrobe2',
+    'Wardrobe3',
+    'Wardrobe4',
+    'Wardrobe5',
+    'Wardrobe6',
+    'Wardrobe7',
+    'Wardrobe8'
+}
+
+
 initialize = function(text, settings)
     if not windower.ffxi.get_info().logged_in then
         return
@@ -219,6 +237,20 @@ function add_skills(t, abilities, active, resource, AM)
         end
     end
     return t
+end
+
+-- check if the player has ig. gauntlets +2/3 equipped
+-- probably cannot check other players?
+function has_augmented_weapon_bash()
+    local hands = windower.ffxi.get_items('equipment').hands
+    for _, bag in ipairs(bags) do 
+        local items = windower.ffxi.get_items(bag)
+        if weapon_bash_augment:contains(items[hands].id) then
+            return true
+        end
+    end
+
+    return false
 end
 
 function check_results(reson)
@@ -370,6 +402,10 @@ function action_handler(act)
         apply_properties(target.id, resource, action_id, aeonic_prop(ability, actor), ability.delay or 3, 1)
     elseif message_id == 529 then
         apply_properties(target.id, resource, action_id, chainbound[param], 2, 1, false, param)
+    elseif action_id == 77 and has_augmented_weapon_bash() then -- weapon bash
+        apply_properties(target.id, resource, action_id, chainbound[1], 2, 1, false, 1)
+    elseif action_id == 209 then -- wild flourish
+        apply_properties(target.id, resource, action_id, chainbound[1], 2, 1, false, 1)
     elseif message_id == 100 and buff_dur[param] then
         buffs[actor] = buffs[actor] or {}
         buffs[actor][param] = buff_dur[param] + os.time()
